@@ -52,6 +52,7 @@ export async function GET(request: Request, { params: { workspaceId } }: Params)
     });
 
     const users = workspaceUsers.map(subscription => ({
+      id: subscription.user.id,
       userId: subscription.user.id,
       username: subscription.user.username,
       name: subscription.user.name,

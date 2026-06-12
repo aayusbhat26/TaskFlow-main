@@ -102,7 +102,7 @@ export interface UsersAssignedToMindMapInfo extends Workspace {
   subscribers: AssignedToMindMapUser[];
 }
 
-export type AssignedItemType = "task" | "mindMap";
+export type AssignedItemType = "task" | "mindMap" | "note" | "pomodoro" | "dsa" | "group";
 
 export interface AssignedToMeDataItem {
   id: string;
@@ -123,6 +123,10 @@ export interface AssignedToMeDataItem {
 export interface AssignedToMeTaskAndMindMaps {
   tasks: AssignedToMeDataItem[];
   mindMaps: AssignedToMeDataItem[];
+  notes: AssignedToMeDataItem[];
+  pomodoros: AssignedToMeDataItem[];
+  dsa: AssignedToMeDataItem[];
+  groups?: AssignedToMeDataItem[];
 }
 
 export interface CalendarItem {
@@ -203,6 +207,7 @@ export interface WorkspaceRecentActivity {
     by?: UserInfo | null;
   };
   starred: boolean;
+  priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   tags: Tag[];
   assignedTo: WorkspaceRecentActivityAssignedToItem[];
   link: string;
@@ -211,6 +216,10 @@ export interface WorkspaceRecentActivity {
 export interface AssignedToMeTaskAndMindMapsWorkspaceRecentActivity {
   tasks: WorkspaceRecentActivity[];
   mindMaps: WorkspaceRecentActivity[];
+  notes: WorkspaceRecentActivity[];
+  pomodoros: WorkspaceRecentActivity[];
+  dsa: WorkspaceRecentActivity[];
+  groups?: WorkspaceRecentActivity[];
 }
 
 export interface ExtendedWorkspace extends Workspace {

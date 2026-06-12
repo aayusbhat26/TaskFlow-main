@@ -13,6 +13,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 import { GroupsList } from "../groups/GroupsList";
+import { ChannelsList } from "./channels/ChannelsList";
 
 interface Props {
   workspaceId: string;
@@ -37,11 +38,13 @@ export const WorkspaceOptions = ({ workspaceId }: Props) => {
   });
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       <div>
-        <p>{t("SHORTCUTS")}</p>
+        <p className="text-xs sm:text-sm uppercase text-muted-foreground mb-2">
+          {t("SHORTCUTS")}
+        </p>
         {!isLoading && workspaceShortcuts && (
-          <div>
+          <div className="flex flex-col gap-2">
             <WorkspaceOption
               workspaceId={workspaceId}
               href={`tasks/task`}
@@ -64,7 +67,13 @@ export const WorkspaceOptions = ({ workspaceId }: Props) => {
         )}
       </div>
       <div>
-        <p className="text-xs sm:text-sm uppercase text-muted-foreground">
+        <p className="text-xs sm:text-sm uppercase text-muted-foreground mb-2">
+          CHANNELS
+        </p>
+        <ChannelsList workspaceId={workspaceId} />
+      </div>
+      <div>
+        <p className="text-xs sm:text-sm uppercase text-muted-foreground mb-2">
           {t("ACTIONS")}
         </p>
         <div className="flex flex-col gap-2 w-full mt-2">

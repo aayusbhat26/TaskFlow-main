@@ -13,6 +13,10 @@ interface SocketContextType {
   sendNoteCreated: (workspaceId: string, note: any) => void;
   sendNoteUpdated: (workspaceId: string, note: any) => void;
   sendNoteDeleted: (workspaceId: string, noteId: string) => void;
+  sendMindMapCursor: (workspaceId: string, x: number, y: number, user: any) => void;
+  sendMindMapNodesChange: (workspaceId: string, changes: any[]) => void;
+  sendMindMapEdgesChange: (workspaceId: string, changes: any[]) => void;
+  sendMindMapSync: (workspaceId: string, flow: any) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
@@ -24,6 +28,10 @@ const SocketContext = createContext<SocketContextType>({
   sendNoteCreated: () => {},
   sendNoteUpdated: () => {},
   sendNoteDeleted: () => {},
+  sendMindMapCursor: () => {},
+  sendMindMapNodesChange: () => {},
+  sendMindMapEdgesChange: () => {},
+  sendMindMapSync: () => {},
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -153,6 +161,30 @@ export function SocketProvider({ children }: SocketProviderProps) {
     }
   }, [socket, isConnected]);
 
+  const sendMindMapCursor = useCallback((workspaceId: string, x: number, y: number, user: any) => {
+    if (socket && isConnected) {
+      socket.emit('mindmap-cursor-move', { workspaceId, x, y, user });
+    }
+  }, [socket, isConnected]);
+
+  const sendMindMapNodesChange = useCallback((workspaceId: string, changes: any[]) => {
+    if (socket && isConnected) {
+      socket.emit('mindmap-nodes-change', { workspaceId, changes });
+    }
+  }, [socket, isConnected]);
+
+  const sendMindMapEdgesChange = useCallback((workspaceId: string, changes: any[]) => {
+    if (socket && isConnected) {
+      socket.emit('mindmap-edges-change', { workspaceId, changes });
+    }
+  }, [socket, isConnected]);
+
+  const sendMindMapSync = useCallback((workspaceId: string, flow: any) => {
+    if (socket && isConnected) {
+      socket.emit('mindmap-sync', { workspaceId, flow });
+    }
+  }, [socket, isConnected]);
+
   const contextValue = useMemo(() => ({
     socket,
     isConnected,
@@ -162,7 +194,15 @@ export function SocketProvider({ children }: SocketProviderProps) {
     sendNoteCreated,
     sendNoteUpdated,
     sendNoteDeleted,
-  }), [socket, isConnected, joinWorkspace, leaveWorkspace, sendMessage, sendNoteCreated, sendNoteUpdated, sendNoteDeleted]);
+    sendMindMapCursor,
+    sendMindMapNodesChange,
+    sendMindMapEdgesChange,
+    sendMindMapSync,
+  }), [
+    socket, isConnected, joinWorkspace, leaveWorkspace, sendMessage, 
+    sendNoteCreated, sendNoteUpdated, sendNoteDeleted,
+    sendMindMapCursor, sendMindMapNodesChange, sendMindMapEdgesChange, sendMindMapSync
+  ]);
 
   return (
     <SocketContext.Provider value={contextValue}>

@@ -219,7 +219,9 @@
       "DEFAULT_NAME": "Untitled",
       "ACTIONS": "Actions",
       "ADD_TASK": "Add task",
-      "ADD_MIND_MAP": "Add mind map"
+      "ADD_TASK_PENDING": "Adding task...",
+      "ADD_MIND_MAP": "Add mind map",
+      "ADD_MIND_MAP_PENDING": "Adding mind map..."
     }
   },
   "COMMON": {
@@ -271,6 +273,9 @@
     "EDITED_ITEM_SENTENCE": {
       "MIND_MAP": "Mind map edited",
       "TASK": "Task edited",
+      "NOTE": "Created or edited a note",
+      "POMODORO": "Completed a Pomodoro session",
+      "DSA": "Updated progress on a DSA question",
       "BY": "by",
       "IN": " - in"
     }
@@ -742,6 +747,7 @@
   },
   "WORKSPACE_MAIN_PAGE": {
     "FILTER": {
+      "TITLE": "Filters",
       "FILTER_BTN": "Filter",
       "CLEAR_BTN": "Clear"
     },
@@ -753,6 +759,7 @@
       "ASSIGNED_TO_ME": "Assigned to me"
     },
     "RECENT_ACTIVITY": {
+      "TITLE": "Recent Activity",
       "NO_FILTERED_DATA": "No tasks and mind maps to display for the given criteria",
       "ERROR": "Failed to fetch recent workspace activity data",
       "NO_DATA": "No activity found. Create your first tasks and mind maps now!"

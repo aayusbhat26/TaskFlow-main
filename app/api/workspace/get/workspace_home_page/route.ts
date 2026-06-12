@@ -141,6 +141,7 @@ export const GET = async (request: Request) => {
             starred: task.savedTask.length > 0,
             tags: task.tags,
             assignedTo: task.assignedToTask,
+            priority: task.priority as any,
             link: `/dashboard/workspace/${workspaceId}/tasks/task/${task.id}`,
           };
         })

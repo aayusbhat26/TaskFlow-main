@@ -22,7 +22,9 @@ import {
   AlertCircle,
   CheckCheck,
   List,
-  RefreshCw
+  LayoutGrid,
+  RefreshCw,
+  Flag
 } from 'lucide-react';
 import { cn, getRandomColor } from '@/lib/utils';
 import { playTaskCompletionSound } from '@/lib/soundEffects';
@@ -59,6 +61,7 @@ interface Task {
     to: string | null;
   };
   isCompleted?: boolean;
+  priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 }
 
 interface TasksModalProps {
@@ -71,16 +74,28 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
   const [filterCompleted, setFilterCompleted] = useState<'all' | 'completed' | 'pending'>('all');
   const [isOpen, setIsOpen] = useState(false);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [isExpanded, setIsExpanded] = useState(false);
   const { tasks, loading, error, fetchTasks, completeTask, refreshTasks } = useTasks();
 
-  // Fetch tasks when modal opens (only once)
+  // Fetch tasks when modal opens and poll for updates
   useEffect(() => {
     if (isOpen && workspaceId) {
-      // Fetch all tasks once when modal opens, then filter client-side
+      // Fetch all tasks initially
       fetchTasks({
         workspaceId,
-        filter: 'all' // Always fetch all tasks
+        filter: 'all'
       });
+      
+      // Poll every 5 seconds for updates while modal is open
+      const intervalId = setInterval(() => {
+        fetchTasks({
+          workspaceId,
+          filter: 'all'
+        });
+      }, 5000);
+      
+      return () => clearInterval(intervalId);
     }
   }, [isOpen, workspaceId]); // Remove fetchTasks from dependencies to prevent loops
 
@@ -124,6 +139,18 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
     }
   };
 
+  const renderEmoji = (emojiStr: string) => {
+    if (!emojiStr) return null;
+    if (/^[0-9a-fA-F]{4,6}$/.test(emojiStr)) {
+      try {
+        return String.fromCodePoint(parseInt(emojiStr, 16));
+      } catch (e) {
+        return emojiStr;
+      }
+    }
+    return emojiStr;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -136,13 +163,35 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] p-0">
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <CheckCheck className="w-5 h-5" />
-            All Tasks
-            <Badge variant="secondary" className="ml-2">
-              {completedCount}/{totalCount} completed
-            </Badge>
-          </DialogTitle>
+          <div className="flex items-center justify-between w-full">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <CheckCheck className="w-5 h-5" />
+              All Tasks
+              <Badge variant="secondary" className="ml-2">
+                {completedCount}/{totalCount} completed
+              </Badge>
+            </DialogTitle>
+            <div className="flex items-center gap-1">
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8"
+                title="List View"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('grid')}
+                className="h-8 w-8"
+                title="Grid View"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="p-6 pt-4 space-y-4">
@@ -194,7 +243,7 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
 
           {/* Tasks List */}
           <ScrollArea className="h-[400px] pr-4">
-            <div className="space-y-3">
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-3"}>
               {loading && filteredTasks.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <RefreshCw className="w-8 h-8 mx-auto mb-2 animate-spin" />
@@ -221,18 +270,19 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
                   <p className="text-sm">Try adjusting your search or filter criteria</p>
                 </div>
               ) : (
-                filteredTasks.map((task) => {
-                  const isCompleted = task.isCompleted;
+                <>
+                  {filteredTasks.slice(0, isExpanded ? undefined : 5).map((task) => {
+                    const isCompleted = task.isCompleted;
 
-                  return (
-                    <Card key={task.id} className={cn(
-                      "transition-all duration-200 hover:shadow-md",
-                      isCompleted && "opacity-75 bg-muted/50"
-                    )}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          {/* Completion Checkbox */}
-                          <Button
+                    return (
+                      <Card key={task.id} className={cn(
+                        "transition-all duration-200 hover:shadow-md h-full",
+                        isCompleted && "opacity-75 bg-muted/50"
+                      )}>
+                        <CardContent className={cn("p-4 flex h-full", viewMode === 'grid' ? "flex-col items-start gap-4" : "items-start gap-3")}>
+                          <div className={cn("flex w-full", viewMode === 'grid' ? "justify-between" : "items-start gap-3")}>
+                            {/* Completion Checkbox */}
+                            <Button
                             variant="ghost"
                             size="sm"
                             className="p-0 h-auto hover:bg-transparent"
@@ -260,7 +310,7 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <span className="text-lg">{task.emoji}</span>
+                                <span className="text-lg">{renderEmoji(task.emoji)}</span>
                                 <h3 className={cn(
                                   "font-medium truncate",
                                   isCompleted && "line-through text-muted-foreground"
@@ -322,7 +372,17 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
                                     </AvatarFallback>
                                   </Avatar>
                                   <span className="text-xs">{task.creator.name}</span>
-                                </div>
+                                  {/* Priority */}
+                              {task.priority && task.priority !== "LOW" && task.priority !== "MEDIUM" && (
+                                <Badge
+                                  variant="outline"
+                                  className={cn("shrink-0", task.priority === "URGENT" ? "border-red-500 text-red-700" : "border-orange-500 text-orange-700")}
+                                >
+                                  <Flag className="w-3 h-3 mr-1" />
+                                  {task.priority}
+                                </Badge>
+                              )}
+                            </div>
                               </div>
 
                               {task.assignedToTask && task.assignedToTask.length > 0 && (
@@ -351,8 +411,20 @@ export function TasksModal({ workspaceId, trigger }: TasksModalProps) {
                       </CardContent>
                     </Card>
                   );
-                })
-              )}
+                })}
+                {filteredTasks.length > 5 && (
+                  <div className={cn("pt-2 pb-4", viewMode === 'grid' && "col-span-1 sm:col-span-2")}>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => setIsExpanded(!isExpanded)}
+                    >
+                      {isExpanded ? "View Less" : "View More"}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
             </div>
           </ScrollArea>
 

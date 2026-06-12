@@ -14,6 +14,16 @@ import { twMerge } from "tailwind-merge";
 import dayjs from "dayjs";
 import { array } from "zod";
 
+export function truncateText(text: string, maxLength: number) {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + "...";
+}
+
+export function unifiedToNative(unified: string) {
+  const codePoints = unified.split("-").map((u) => parseInt(u, 16));
+  return String.fromCodePoint(...codePoints);
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

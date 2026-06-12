@@ -32,6 +32,13 @@ model User {
   totalPomodoroCompleted   Int                  @default(0)
   totalTasksCompleted      Int                  @default(0)
   totalNotesCreated        Int                  @default(0)
+  plan                     Plan                 @default(FREE)
+  stripeCurrentPeriodEnd   DateTime?
+  stripeCustomerId         String?              @unique
+  stripePriceId            String?
+  stripeSubscriptionId     String?              @unique
+  razorpayCustomerId       String?              @unique
+  razorpaySubscriptionId   String?              @unique
   accounts                 Account?
   calendarAttendees        CalendarAttendee[]
   calendarEvents           CalendarEvent[]
@@ -45,6 +52,8 @@ model User {
   EmailTemplate            EmailTemplate[]
   fileAttachments          FileAttachment[]
   leaderboardEntries       LeaderboardEntry[]
+  messageMentions          MessageMention[]
+  messageReactions         MessageReaction[]
   createdMindMaps          MindMap[]            @relation("MindMapCreatedByUser")
   updatedMindMaps          MindMap[]            @relation("MindMapUpdatedByUser")
   notes                    Note[]
@@ -78,16 +87,16 @@ model User {
 }
 
 model Group {
-  id          String        @id @default(cuid())
-  name        String
-  workspaceId String
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  members     User[]        @relation("GroupMembers")
-  notes       Note[]
-  messages    ChatMessage[]
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  name            String
+  workspaceId     String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  isDirectMessage Boolean       @default(false)
+  messages        ChatMessage[]
+  workspace       Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  notes           Note[]
+  members         User[]        @relation("GroupMembers")
 
   @@index([workspaceId])
 }
@@ -152,16 +161,18 @@ model Notification {
 }
 
 model FileAttachment {
-  id           String   @id @default(cuid())
-  filename     String
-  originalName String
-  mimeType     String
-  size         Int
-  url          String
-  key          String
-  uploadedById String
-  createdAt    DateTime @default(now())
-  uploadedBy   User     @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  id            String       @id @default(cuid())
+  filename      String
+  originalName  String
+  mimeType      String
+  size          Int
+  url           String
+  key           String
+  uploadedById  String
+  createdAt     DateTime     @default(now())
+  chatMessageId String?
+  chatMessage   ChatMessage? @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+  uploadedBy    User         @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 }
 
 model Workspace {
@@ -178,6 +189,7 @@ model Workspace {
   color            CustomColors      @default(BLUE)
   calendarEvents   CalendarEvent[]
   chatMessages     ChatMessage[]
+  groups           Group[]
   mindMaps         MindMap[]
   notes            Note[]
   notification     Notification[]
@@ -186,8 +198,51 @@ model Workspace {
   tags             Tag[]
   tasks            Task[]
   timeBlocks       TimeBlock[]
-  groups           Group[]
+  channels         Channel[]
+  channelCategories ChannelCategory[]
   Creator          User?             @relation("CreatedBy", fields: [creatorId], references: [id], onDelete: Cascade)
+}
+
+enum ChannelType {
+  TEXT
+  VOICE
+  VIDEO
+  STAGE
+}
+
+model ChannelCategory {
+  id          String    @id @default(cuid())
+  name        String
+  workspaceId String
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isCollapsed Boolean   @default(false)
+  channels    Channel[]
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+}
+
+model Channel {
+  id          String           @id @default(cuid())
+  name        String
+  type        ChannelType      @default(TEXT)
+  workspaceId String
+  categoryId  String?
+  order       Int              @default(0)
+  isReadOnly  Boolean          @default(false)
+  isNSFW      Boolean          @default(false)
+  isLocked    Boolean          @default(false)
+  slowMode    Int              @default(0) // seconds
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  messages    ChatMessage[]
+  category    ChannelCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([categoryId])
 }
 
 model Task {
@@ -508,21 +563,62 @@ model PointTransaction {
 }
 
 model ChatMessage {
-  id          String    @id @default(cuid())
-  content     String
+  id          String            @id @default(cuid())
+  content     String?
   authorId    String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   workspaceId String
   groupId     String?
-  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  group       Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  channelId   String?
+  replyToId   String?
+  isDeleted   Boolean           @default(false)
+  isEdited    Boolean           @default(false)
+  readByIds   String[]          @default([])
+  author      User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group       Group?            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  channel     Channel?          @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  replyTo     ChatMessage?      @relation("ThreadedReplies", fields: [replyToId], references: [id])
+  replies     ChatMessage[]     @relation("ThreadedReplies")
+  workspace   Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  attachments FileAttachment[]
+  mentions    MessageMention[]
+  reactions   MessageReaction[]
 
   @@index([workspaceId])
   @@index([groupId])
+  @@index([channelId])
   @@index([authorId])
   @@index([createdAt])
+  @@index([replyToId])
+}
+
+model MessageReaction {
+  id        String      @id @default(cuid())
+  emoji     String
+  messageId String
+  userId    String
+  createdAt DateTime    @default(now())
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model MessageMention {
+  id        String      @id @default(cuid())
+  messageId String
+  userId    String
+  read      Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
 }
 
 model Note {
@@ -544,12 +640,12 @@ model Note {
   templateId    String?
   content       String?
   author        User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group         Group?             @relation(fields: [groupId], references: [id], onDelete: Cascade)
   parent        Note?              @relation("NoteHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children      Note[]             @relation("NoteHierarchy")
   template      Note?              @relation("NoteTemplate", fields: [templateId], references: [id])
   basedOn       Note[]             @relation("NoteTemplate")
   workspace     Workspace?         @relation(fields: [workspaceId], references: [id])
-  group         Group?             @relation(fields: [groupId], references: [id], onDelete: Cascade)
   blocks        NoteBlock[]
   collaborators NoteCollaborator[]
   history       NoteHistory[]
@@ -957,6 +1053,12 @@ model EmailTemplate {
   updatedAt     DateTime
   EmailCampaign EmailCampaign[]
   User          User?                 @relation(fields: [createdById], references: [id])
+}
+
+enum Plan {
+  FREE
+  PRO
+  BUSINESS
 }
 
 enum RecurringType {

@@ -13,7 +13,8 @@ import { useIntersection } from "@mantine/hooks";
 import { LoadingState } from "../ui/loadingState";
 import { HomeRecentActivityItem } from "./HomeRecentActivityItem";
 import { ACTIVITY_PER_PAGE } from "@/lib/constants";
-import { Activity } from "lucide-react";
+import { Activity, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface Props {
   userId: string;
@@ -26,6 +27,7 @@ export const HomeRecentActivityContainer = ({ userId, initialData }: Props) => {
   const t = useTranslations("HOME_PAGE");
 
   const [isAllFetched, setIsAllFetched] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   const lastActivityItem = useRef<null | HTMLDivElement>(null);
 
@@ -63,8 +65,9 @@ export const HomeRecentActivityContainer = ({ userId, initialData }: Props) => {
   }, [entry, isAllFetched, fetchNextPage]);
 
   const activityItems = useMemo(() => {
-    return data?.pages.flatMap((page) => page) ?? initialData;
-  }, [data?.pages, initialData]);
+    const all = data?.pages.flatMap((page) => page) ?? initialData;
+    return showAll ? all : all.slice(0, 3);
+  }, [data?.pages, initialData, showAll]);
 
   if (isError) {
     return <ClientError message={t("ERROR")} />;
@@ -101,10 +104,23 @@ export const HomeRecentActivityContainer = ({ userId, initialData }: Props) => {
           );
         }
       })}
-      {isFetchingNextPage && (
+      {isFetchingNextPage && showAll && (
         <div className="flex justify-center items-center mt-2">
           <LoadingState />
         </div>
+      )}
+      {(data?.pages.flatMap((page) => page) ?? initialData).length > 3 && (
+        <Button 
+          variant="ghost" 
+          className="w-full mt-2 text-muted-foreground hover:text-foreground"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? (
+            <>View Less <ChevronUp className="ml-2 w-4 h-4" /></>
+          ) : (
+            <>View More <ChevronDown className="ml-2 w-4 h-4" /></>
+          )}
+        </Button>
       )}
     </div>
   );

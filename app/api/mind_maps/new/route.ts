@@ -43,6 +43,11 @@ export async function POST(request: Request) {
             userRole: true,
           },
         },
+        _count: {
+          select: {
+            createdMindMaps: true,
+          }
+        }
       },
     });
 
@@ -53,8 +58,22 @@ export async function POST(request: Request) {
       });
     }
 
-    if (user.subscriptions[0].userRole === "READ_ONLY") {
+    if (user.subscriptions[0]?.userRole === "READ_ONLY") {
       return NextResponse.json("ERRORS.NO_PERMISSION", { status: 403 });
+    }
+
+    if (user.plan === "FREE" && user._count.createdMindMaps >= 3) {
+      return new NextResponse("Free plan users can only create up to 3 mind maps.", {
+        status: 403,
+        statusText: "Free Plan Limit Reached",
+      });
+    }
+
+    if (user.plan === "PRO" && user._count.createdMindMaps >= 8) {
+      return new NextResponse("Pro plan users can only create up to 8 mind maps. Upgrade to Business for unlimited.", {
+        status: 403,
+        statusText: "Pro Plan Limit Reached",
+      });
     }
 
     const mindMap = await db.mindMap.create({

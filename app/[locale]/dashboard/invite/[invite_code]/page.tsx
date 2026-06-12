@@ -69,11 +69,26 @@ const Workspace = async ({ params: { invite_code }, searchParams }: Params) => {
       return redirect("/dashboard/errors?error=wrong-role");
   }
 
-  const inviteCodeValid = await db.workspace.findUnique({
-    where: {
-      ...inviteCodeValidWhere,
-    },
-  });
+  const [existingWorkspace, inviteCodeValid] = await Promise.all([
+    db.workspace.findFirst({
+      where: {
+        inviteCode: invite_code,
+        subscribers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+    }),
+    db.workspace.findUnique({
+      where: {
+        ...inviteCodeValidWhere,
+      },
+    })
+  ]);
+
+  if (existingWorkspace)
+    redirect(`/dashboard/workspace/${existingWorkspace.id}`);
 
   if (!inviteCodeValid)
     redirect("/dashboard/errors?error=outdated-invite-code");
@@ -97,20 +112,6 @@ const Workspace = async ({ params: { invite_code }, searchParams }: Params) => {
   await db.notification.createMany({
     data: notificationsData,
   });
-
-  const existingWorkspace = await db.workspace.findFirst({
-    where: {
-      inviteCode: invite_code,
-      subscribers: {
-        some: {
-          userId: session.user.id,
-        },
-      },
-    },
-  });
-
-  if (existingWorkspace)
-    redirect(`/dashboard/workspace/${existingWorkspace.id}`);
 
   const userRole = () => {
     switch (role) {

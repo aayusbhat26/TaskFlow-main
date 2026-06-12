@@ -58,6 +58,10 @@ export const AutoSaveMindMapProvider = ({ children }: Props) => {
       const flow = rfInstance?.toObject();
       //@ts-ignore
       updateMindMap(flow);
+      
+      // Dispatch custom event to notify MindMap.tsx to sync
+      const event = new CustomEvent('mindmap-local-save', { detail: flow });
+      window.dispatchEvent(event);
     }
   }, [rfInstance, updateMindMap, ids]);
 

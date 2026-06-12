@@ -28,9 +28,12 @@ interface Task {
     color: string;
   }>;
   taskDate?: {
-    date: string;
+    id?: string;
+    from?: string | null;
+    to?: string | null;
   };
   isCompleted?: boolean;
+  priority?: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 }
 
 interface TasksState {
@@ -88,7 +91,12 @@ export function useTasks(): UseTasksReturn {
         searchParams.append('filter', params.filter);
       }
 
-      const response = await fetch(`/api/tasks?${searchParams}`);
+      const response = await fetch(`/api/tasks?${searchParams}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       const data = await response.json();
 
       if (!response.ok) {

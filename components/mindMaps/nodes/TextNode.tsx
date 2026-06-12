@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 type NodeData = {
   text: string;
   color: MindMapItemColors;
+  emoji?: string;
   onDelete: () => void;
 };
 
@@ -80,6 +81,7 @@ export const TextNode = ({ data, id }: NodeProps<NodeData>) => {
     <NodeWrapper
       nodeId={id}
       color={data.color}
+      emoji={data.emoji}
       isEditing={true}
       onIsEdit={onIsEdit}
       onDelete={data.onDelete}
@@ -105,14 +107,14 @@ export const TextNode = ({ data, id }: NodeProps<NodeData>) => {
                 type="button"
                 onClick={onIsEdit}
                 variant={"ghost"}
-                className=" py-1.5 sm:py:1.5 h-fit border"
+                className="py-1.5 sm:py-1.5 h-fit border"
                 size={"sm"}
               >
                 {t("CANCEL")}
               </Button>
               <Button
                 type="submit"
-                className=" py-1.5 sm:py-1.5 h-fit border"
+                className="py-1.5 sm:py-1.5 h-fit border"
                 size={"sm"}
                 variant={"ghost"}
               >

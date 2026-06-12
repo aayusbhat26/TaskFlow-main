@@ -22,6 +22,8 @@ export const UserStatus = ({ image, username, maxText, active }: Props) => {
         <UserAvatar
           className="w-8 h-8 sm:w-10 sm:h-10"
           profileImage={image}
+          fallbackText={username ? username[0].toUpperCase() : "?"}
+          userId={username}
           size={14}
         />
         {active && (

@@ -118,7 +118,7 @@ export const TaskOptions = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
-          <DropdownMenuContent align="end" sideOffset={-8}>
+          <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => {
                 toggleSaveTask();

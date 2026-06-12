@@ -53,98 +53,96 @@ export default async function GroupPage({ params }: PageProps) {
     return <div>You are not a member of this group</div>;
   }
 
-  // Fetch all workspace members to allow adding them to the group
-  const workspaceSubscribers = await db.subscription.findMany({
-    where: {
-      workspaceId: group.workspaceId,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          image: true,
+  // Fetch all independent data in parallel
+  const [workspaceSubscribers, notes, workspaces] = await Promise.all([
+    db.subscription.findMany({
+      where: {
+        workspaceId: group.workspaceId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+          },
         },
       },
-    },
-  });
+    }),
+    db.note.findMany({
+      where: {
+        groupId: params.groupId,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+          }
+        },
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+          }
+        },
+        blocks: {
+          orderBy: {
+            position: 'asc'
+          }
+        },
+        children: {
+          select: {
+            id: true,
+            title: true,
+            icon: true,
+            position: true,
+          },
+          orderBy: {
+            position: 'asc'
+          }
+        },
+        _count: {
+          select: {
+            blocks: true,
+            children: true,
+          }
+        }
+      },
+      orderBy: [
+        { isFavorite: 'desc' },
+        { updatedAt: 'desc' }
+      ]
+    }),
+    db.workspace.findMany({
+      where: {
+        subscribers: {
+          some: {
+            userId: session.user.id,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        color: true,
+      },
+    })
+  ]);
 
   // Filter out users who are already in the group
   const potentialMembers = workspaceSubscribers
     .map((sub) => sub.user)
     .filter((user) => !group.members.some((member) => member.id === user.id));
 
-  // Fetch notes for this group
-  const notes = await db.note.findMany({
-    where: {
-      groupId: params.groupId,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          username: true,
-          image: true,
-        }
-      },
-      workspace: {
-        select: {
-          id: true,
-          name: true,
-          color: true,
-        }
-      },
-      blocks: {
-        orderBy: {
-          position: 'asc'
-        }
-      },
-      children: {
-        select: {
-          id: true,
-          title: true,
-          icon: true,
-          position: true,
-        },
-        orderBy: {
-          position: 'asc'
-        }
-      },
-      _count: {
-        select: {
-          blocks: true,
-          children: true,
-        }
-      }
-    },
-    orderBy: [
-      { isFavorite: 'desc' },
-      { updatedAt: 'desc' }
-    ]
-  });
-
-  // Fetch workspaces for NotesApp context (it expects a list)
-  const workspaces = await db.workspace.findMany({
-    where: {
-      subscribers: {
-        some: {
-          userId: session.user.id,
-        },
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      color: true,
-    },
-  });
-
   // Map Group to Workspace interface for ChatArea
   const groupAsWorkspace = {
-    id: group.id,
+    id: params.workspace_id,
     name: group.name,
     image: null,
     color: 'BLUE',
@@ -162,14 +160,15 @@ export default async function GroupPage({ params }: PageProps) {
     email: session.user.email || '',
     image: session.user.image,
     username: session.user.username || '',
+    plan: session.user.plan || 'FREE',
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white">
-      <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between bg-white">
+    <div className="flex flex-col h-full w-full bg-background">
+      <div className="border-b border-border px-6 py-4 flex items-center justify-between bg-background">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
-          <p className="text-sm text-gray-500 flex items-center mt-1">
+          <h1 className="text-2xl font-bold text-foreground">{group.name}</h1>
+          <p className="text-sm text-muted-foreground flex items-center mt-1">
             <Users className="w-4 h-4 mr-1" />
             {group._count.members} members
           </p>
@@ -177,11 +176,11 @@ export default async function GroupPage({ params }: PageProps) {
       </div>
 
       <Tabs defaultValue="chat" className="flex-1 flex flex-col overflow-hidden">
-        <div className="px-6 border-b border-gray-200 bg-gray-50">
+        <div className="px-6 border-b border-border bg-muted/30">
           <TabsList className="bg-transparent p-0 h-12 space-x-6">
             <TabsTrigger
               value="chat"
-              className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 font-medium"
+              className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-0 font-medium text-muted-foreground"
             >
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
@@ -190,7 +189,7 @@ export default async function GroupPage({ params }: PageProps) {
             </TabsTrigger>
             <TabsTrigger
               value="notes"
-              className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 font-medium"
+              className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-0 font-medium text-muted-foreground"
             >
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
@@ -199,7 +198,7 @@ export default async function GroupPage({ params }: PageProps) {
             </TabsTrigger>
             <TabsTrigger
               value="members"
-              className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 font-medium"
+              className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-0 font-medium text-muted-foreground"
             >
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />

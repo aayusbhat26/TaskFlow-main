@@ -27,7 +27,6 @@ export const SummarySection = () => {
           />
           <div className="text-center space-y-1.5 text-3xl break-words max-w-xs font-semibold">
             {name && <p>{name}</p>}
-            {surname && <p>{surname}</p>}
           </div>
           {!useCase && <span className="bg-muted rounded-md w-24 h-8"></span>}
           {useCase && (

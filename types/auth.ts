@@ -6,6 +6,7 @@ declare module "next-auth/jwt" {
     username?: string | null;
     surname?: string | null;
     completedOnboarding?: boolean;
+    plan?: string;
   }
 }
 
@@ -16,6 +17,7 @@ declare module "next-auth" {
       username?: string | null;
       completedOnboarding: boolean;
       surname?: string | null;
+      plan?: string;
     };
   }
 }

@@ -17,17 +17,21 @@ import { useAutosaveIndicator } from "@/context/AutosaveIndicator";
 import { useAutoSaveMindMap } from "@/context/AutoSaveMindMap";
 import { cn } from "@/lib/utils";
 import { MindMapItemColors } from "@/types/enums";
-import { Check, MoreHorizontal, Palette, Pencil, Trash } from "lucide-react";
+import { Check, MoreHorizontal, Palette, Pencil, Trash, Smile } from "lucide-react";
+import { EmojiSelector } from "@/components/common/EmojiSelector";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useState } from "react";
 import { Handle, Position, useReactFlow } from "reactflow";
 import { useDebouncedCallback } from "use-debounce";
+import { unifiedToNative } from "@/lib/utils";
 
 interface Props {
   nodeId: string;
   children: React.ReactNode;
   className?: string;
   color?: MindMapItemColors;
+  shape?: "rectangle" | "circle" | "diamond" | "square";
+  emoji?: string;
   isEditing: boolean;
   onIsEdit: () => void;
   onDelete: () => void;
@@ -54,6 +58,8 @@ export const NodeWrapper = ({
   children,
   className,
   color = MindMapItemColors.DEFAULT,
+  shape = "rectangle",
+  emoji,
   isEditing,
   onIsEdit,
   onDelete,
@@ -71,11 +77,26 @@ export const NodeWrapper = ({
     onSave();
   }, 3000);
 
-  const onSaveNode = useCallback(
+  const onSaveNodeColor = useCallback(
     (color: MindMapItemColors) => {
       setNodes((prevNodes) => {
         const nodes = prevNodes.map((node: any) =>
           node.id === nodeId ? { ...node, data: { ...node.data, color } } : node
+        );
+        return nodes;
+      });
+      onSetStatus("unsaved");
+      debouncedMindMapInfo();
+    },
+    [setNodes, nodeId, debouncedMindMapInfo, onSetStatus]
+  );
+
+  const onSaveNodeEmoji = useCallback(
+    (emojiUnified: string) => {
+      const nativeEmoji = unifiedToNative(emojiUnified);
+      setNodes((prevNodes) => {
+        const nodes = prevNodes.map((node: any) =>
+          node.id === nodeId ? { ...node, data: { ...node.data, emoji: nativeEmoji } } : node
         );
         return nodes;
       });
@@ -97,9 +118,9 @@ export const NodeWrapper = ({
   const onColorSelect = useCallback(
     (newColor: MindMapItemColors) => {
       setCurrColor(newColor);
-      onSaveNode(newColor);
+      onSaveNodeColor(newColor);
     },
-    [onSaveNode]
+    [onSaveNodeColor]
   );
 
   const nodeColor = useCallback((color: MindMapItemColors) => {
@@ -132,33 +153,83 @@ export const NodeWrapper = ({
         return "!bg-secondary hover:bg-secondary-500";
     }
   }, []);
+
+  const getShapeClasses = (shape: string) => {
+    switch (shape) {
+      case "circle":
+        return "rounded-full w-32 h-32 flex items-center justify-center p-2 text-center aspect-square";
+      case "square":
+        return "rounded-md w-32 h-32 flex items-center justify-center p-2 text-center aspect-square";
+      case "diamond":
+        return "rounded-md w-32 h-32 flex items-center justify-center p-2 text-center aspect-square rotate-45";
+      case "triangle":
+        return "w-36 h-32 flex items-center justify-center p-2 pt-10 text-center clip-path-triangle";
+      case "parallelogram":
+        return "w-40 h-28 flex items-center justify-center p-2 text-center clip-path-parallelogram";
+      case "hexagon":
+        return "w-40 h-32 flex items-center justify-center p-2 text-center clip-path-hexagon";
+      case "cylinder":
+        return "w-32 h-40 flex items-center justify-center p-2 pt-6 text-center border-t-[8px] border-b-[8px] border-t-white/20 border-b-black/20 rounded-[50%/15%]";
+      case "cloud":
+        return "w-48 h-32 flex items-center justify-center p-2 pt-4 text-center clip-path-cloud";
+      case "ellipse":
+        return "w-40 h-24 rounded-[50%] flex items-center justify-center p-2 text-center";
+      case "pentagon":
+        return "w-36 h-36 clip-path-pentagon flex items-center justify-center p-2 pt-8 text-center";
+      case "octagon":
+        return "w-36 h-36 clip-path-octagon flex items-center justify-center p-2 text-center";
+      case "star":
+        return "w-40 h-40 clip-path-star flex items-center justify-center p-2 pt-4 text-center";
+      case "rectangle":
+      default:
+        return "rounded-md w-40 min-h-[4rem] h-fit p-2 flex items-center justify-center text-center";
+    }
+  };
+
   return (
     <div
       className={cn(
-        `min-w-[10rem] max-w-md text-xs px-3 py-1.5 rounded-sm shadow-sm flex items-start justify-between transition-colors duration-200 gap-2 ${nodeColor(
+        `text-xs shadow-sm transition-colors duration-200 gap-2 relative ${nodeColor(
           currColor!
-        )}`,
+        )} ${getShapeClasses(shape)}`,
         className
       )}
     >
       <div className={` ${isEditing ? "w-full" : "w-[90%]"} text-lg`}>
-        {children}
+        <div className="flex gap-2 w-full h-fit flex-col relative">
+          {emoji && <span className="absolute -top-7 -left-3 text-2xl">{emoji}</span>}
+          {children}
+        </div>
         <>
           <Handle
             type="target"
+            position={Position.Top}
+            id="top"
+            className={`transition-colors !border-popover duration-200 p-1`}
+          />
+          <Handle
+            type="target"
             position={Position.Left}
+            id="left"
             className={`transition-colors !border-popover duration-200 p-1`}
           />
           <Handle
             type="source"
             position={Position.Right}
+            id="right"
+            className={`transition-colors !border-popover duration-200 p-1`}
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="bottom"
             className={`transition-colors !border-popover duration-200 p-1`}
           />
         </>
       </div>
       {isEditing && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <div className={`flex items-center gap-0.5 ${shape === "diamond" ? "absolute -top-10 -right-10 rotate-45" : "absolute -top-10 right-0"}`}>
+          <EmojiSelector onSelectedEmoji={onSaveNodeEmoji}>
             <Button
               className={`w-6 h-6 hover:bg-transparent ${
                 currColor === MindMapItemColors.DEFAULT
@@ -168,10 +239,24 @@ export const NodeWrapper = ({
               variant={"ghost"}
               size={"icon"}
             >
-              <MoreHorizontal size={16} />
+              <Smile size={16} />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent sideOffset={-10} align="start">
+          </EmojiSelector>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className={`w-6 h-6 hover:bg-transparent ${
+                  currColor === MindMapItemColors.DEFAULT
+                    ? ""
+                    : "text-white hover:text-white"
+                }`}
+                variant={"ghost"}
+                size={"icon"}
+              >
+                <MoreHorizontal size={16} />
+              </Button>
+            </DropdownMenuTrigger>
+          <DropdownMenuContent sideOffset={-10} align="start" className="min-w-[12rem]">
             <DropdownMenuItem
               onClick={() => {
                 onIsEdit();
@@ -181,45 +266,32 @@ export const NodeWrapper = ({
               <Pencil size={16} />
               <span>{t("EDIT")}</span>
             </DropdownMenuItem>{" "}
-            <DropdownMenuGroup>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="cursor-pointer">
-                  <Palette size={16} />
-                  <span>{t("COLOR")}</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent
-                    className="hover:bg-popover"
-                    sideOffset={10}
-                  >
-                    <DropdownMenuItem className="grid grid-cols-4 gap-2 focus:bg-popover">
-                      {colors.map((color, i) => (
-                        <Button
-                          key={i}
-                          onClick={() => {
-                            onColorSelect(color);
-                          }}
-                          className={`w-5 h-5 p-1 rounded-full ${nodeColor(
-                            color
-                          )}`}
-                        >
-                          {color === currColor && (
-                            <Check
-                              className={`${
-                                color !== MindMapItemColors.DEFAULT
-                                  ? "text-white"
-                                  : ""
-                              }`}
-                              size={16}
-                            />
-                          )}
-                        </Button>
-                      ))}
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            </DropdownMenuGroup>
+            <div className="px-2 py-1.5 text-sm font-semibold flex items-center gap-2">
+              <Palette size={16} />
+              <span>{t("COLOR")}</span>
+            </div>
+            <div className="px-2 py-1.5 grid grid-cols-5 gap-3">
+              {colors.map((color, i) => (
+                <Button
+                  key={i}
+                  onClick={() => {
+                    onColorSelect(color);
+                  }}
+                  className={`w-6 h-6 p-1 rounded-full ${nodeColor(color)}`}
+                >
+                  {color === currColor && (
+                    <Check
+                      className={`${
+                        color !== MindMapItemColors.DEFAULT
+                          ? "text-white"
+                          : ""
+                      }`}
+                      size={14}
+                    />
+                  )}
+                </Button>
+              ))}
+            </div>
             <DropdownMenuItem
               onClick={() => {
                 onDeleteNode();
@@ -232,6 +304,7 @@ export const NodeWrapper = ({
             <DropdownMenuSeparator />
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       )}
     </div>
   );

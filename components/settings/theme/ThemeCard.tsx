@@ -21,7 +21,8 @@ import {
   Leaf, 
   Flower2, 
   Snowflake, 
-  Flame 
+  Flame,
+  Crown
 } from "lucide-react";
 
 interface Props {
@@ -124,8 +125,11 @@ export const ThemeCard = ({ theme, activeTheme, onTheme }: Props) => {
           <div className={`p-2 rounded-full ${colors.primary} text-white`}>
             <Icon size={16} />
           </div>
-          <CardTitle className="text-lg capitalize">
+          <CardTitle className="text-lg capitalize flex items-center gap-2">
             {theme === "system" ? "System" : theme}
+            {!["light", "dark", "system"].includes(theme) && (
+              <Crown size={16} className="text-yellow-500" />
+            )}
           </CardTitle>
         </div>
         {activeTheme === theme && <Badge variant="default" className="text-xs">Active</Badge>}

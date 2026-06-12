@@ -38,6 +38,12 @@ export const FirstStep = ({ profileImage }: Props) => {
   });
   const t = useTranslations("ONBOARDING_FORM");
 
+  const watchedName = form.watch("name");
+
+  useEffect(() => {
+    dispatch({ type: ActionType.NAME, payload: watchedName || "" });
+  }, [watchedName, dispatch]);
+
   useEffect(() => {
     dispatch({
       type: ActionType.PROFILEIMAGE,
@@ -46,9 +52,8 @@ export const FirstStep = ({ profileImage }: Props) => {
   }, [profileImage, dispatch]);
 
   const onSubmit = (data: AdditionalUserInfoFirstPart) => {
-    
     dispatch({ type: ActionType.NAME, payload: data.name! });
-    dispatch({ type: ActionType.SURNAME, payload: data.surname! });
+    dispatch({ type: ActionType.SURNAME, payload: "" });
     dispatch({ type: ActionType.CHANGE_SITE, payload: currentStep + 1 });
   };
 
@@ -73,31 +78,12 @@ export const FirstStep = ({ profileImage }: Props) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-muted-foreground">
-                      {t("FIRST_STEP.INPUTS.NAME")}
+                      Full name
                     </FormLabel>
                     <FormControl>
                       <Input
                         className="bg-muted"
-                        placeholder={t("FIRST_STEP.PLACEHOLDER.NAME")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="surname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-muted-foreground">
-                      {t("FIRST_STEP.INPUTS.SURNAME")}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-muted"
-                        placeholder={t("FIRST_STEP.PLACEHOLDER.SURNAME")}
+                        placeholder="e.g. John Doe"
                         {...field}
                       />
                     </FormControl>

@@ -100,10 +100,10 @@ export function GroupMembersSettings({
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">Group Members</h2>
+        <h2 className="text-lg font-semibold text-foreground">Group Members</h2>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <UserPlus className="w-4 h-4 mr-2" />
               Add Members
             </Button>
@@ -118,7 +118,7 @@ export function GroupMembersSettings({
 
             <div className="py-4">
               <div className="relative mb-4">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
                   value={searchQuery}
@@ -129,7 +129,7 @@ export function GroupMembersSettings({
 
               <ScrollArea className="h-[300px] pr-4">
                 {filteredPotentialMembers.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="text-center text-muted-foreground py-8">
                     No users found to add.
                   </div>
                 ) : (
@@ -137,7 +137,7 @@ export function GroupMembersSettings({
                     {filteredPotentialMembers.map((user) => (
                       <div
                         key={user.id}
-                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
                         onClick={() => handleToggleUser(user.id)}
                       >
                         <Checkbox
@@ -146,15 +146,15 @@ export function GroupMembersSettings({
                         />
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={user.image || ''} alt={user.name || ''} />
-                          <AvatarFallback className={cn("text-white font-semibold", getRandomColor(user.id))}>
+                          <AvatarFallback className={cn("text-primary-foreground font-semibold", getRandomColor(user.id))}>
                             {user.name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {user.name || user.username}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             @{user.username}
                           </p>
                         </div>
@@ -176,7 +176,7 @@ export function GroupMembersSettings({
               <Button
                 onClick={handleAddMembers}
                 disabled={selectedUsers.length === 0 || isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {isLoading ? 'Adding...' : `Add ${selectedUsers.length} Members`}
               </Button>
@@ -190,19 +190,19 @@ export function GroupMembersSettings({
           {currentMembers.map((member) => (
             <div
               key={member.id}
-              className="flex items-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm"
+              className="flex items-center p-4 bg-card border border-border rounded-lg shadow-sm"
             >
               <Avatar className="w-10 h-10 mr-4">
                 <AvatarImage src={member.image || ''} alt={member.name || ''} />
-                <AvatarFallback className={cn("text-white font-semibold", getRandomColor(member.id))}>
+                <AvatarFallback className={cn("text-primary-foreground font-semibold", getRandomColor(member.id))}>
                   {member.name?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-foreground">
                   {member.name || member.username}
                 </p>
-                <p className="text-sm text-gray-500">@{member.username}</p>
+                <p className="text-sm text-muted-foreground">@{member.username}</p>
               </div>
             </div>
           ))}

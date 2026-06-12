@@ -1,6 +1,9 @@
+"use client";
+
 import { cn, getRandomColor } from "@/lib/utils";
 import { User } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 interface Props {
   size?: number;
@@ -17,6 +20,8 @@ export const UserAvatar = ({
   fallbackText,
   userId
 }: Props) => {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div
       className={cn(
@@ -24,8 +29,8 @@ export const UserAvatar = ({
         className
       )}
     >
-      {profileImage ? (
-        <Image src={profileImage} fill alt="Profile Avatar" priority />
+      {profileImage && !imageError ? (
+        <Image src={profileImage} fill alt="Profile Avatar" priority onError={() => setImageError(true)} />
       ) : fallbackText ? (
         <span className={cn(
           "text-sm font-medium text-white w-full h-full flex items-center justify-center rounded-full",

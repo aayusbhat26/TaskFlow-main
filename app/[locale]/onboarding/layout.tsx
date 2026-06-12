@@ -13,12 +13,7 @@ const OnboardingLayout = ({ children }: { children: React.ReactNode }) => {
             size={"icon"}
             variant={"outline"}
           />
-          <ThemeSwitcher
-            alignHover="end"
-            alignDropdown="end"
-            size={"icon"}
-            variant={"outline"}
-          />
+
         </div>
       </div>
       {children}

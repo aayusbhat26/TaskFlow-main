@@ -44,6 +44,9 @@ export const EditorTasks = ({ content, taskId, workspaceId }: Props) => {
       if (status !== "unsaved") onSetStatus("unsaved");
       debouncedEditor();
     },
+    onBlur: () => {
+      debouncedEditor.flush();
+    },
     extensions: [
       StarterKit.configure({
         dropcursor: {
@@ -86,7 +89,7 @@ export const EditorTasks = ({ content, taskId, workspaceId }: Props) => {
     onSetStatus("pending");
     const json = editor?.state.doc.toJSON() as JSON;
     updateTaskContent(json);
-  }, 5000);
+  }, 1000);
 
   return (
     <div>

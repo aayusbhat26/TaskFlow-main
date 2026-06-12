@@ -77,7 +77,7 @@ export async function POST(
     }
 
     // Add members
-    await db.group.update({
+    const updatedGroup = await db.group.update({
       where: {
         id: params.groupId,
       },
@@ -86,6 +86,26 @@ export async function POST(
           connect: validUserIds.map((id) => ({ id })),
         },
       },
+    });
+
+    // Create a greeting message
+    const usersToGreet = workspaceMembers.filter((m) => validUserIds.includes(m.userId));
+    
+    // Get the usernames to mention them
+    const newMembers = await db.user.findMany({
+      where: { id: { in: validUserIds } },
+      select: { username: true }
+    });
+
+    const mentions = newMembers.map(u => `@${u.username}`).join(', ');
+
+    await db.chatMessage.create({
+      data: {
+        content: `👋 Welcome to the group, ${mentions}!`,
+        authorId: session.user.id,
+        workspaceId: group.workspaceId,
+        groupId: group.id,
+      }
     });
 
     return NextResponse.json({

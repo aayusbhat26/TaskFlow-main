@@ -127,6 +127,7 @@ export async function GET(req: NextRequest) {
 
       return {
         ...task,
+        priority: task.priority,
         isCompleted,
         completedAt,
         completedBy,

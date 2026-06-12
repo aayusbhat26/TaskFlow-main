@@ -57,10 +57,7 @@ export async function POST(request: Request) {
     }
 
     const date = await db.taskDate.create({
-      data: {
-        from: undefined,
-        to: undefined,
-      },
+      data: {}
     });
 
     const task = await db.task.create({
@@ -69,14 +66,6 @@ export async function POST(request: Request) {
         creatorId: user.id,
         workspaceId,
         dateId: date.id,
-      },
-    });
-
-    await db.task.update({
-      where: {
-        id: task.id,
-      },
-      data: {
         updatedUserId: session.user.id,
       },
     });
@@ -90,24 +79,25 @@ export async function POST(request: Request) {
       },
     });
 
-    const notificationsData = workspaceUsers.map((user) => ({
-      notifyCreatorId: session.user.id,
-      userId: user.userId,
-      workspaceId,
-      notifyType: NotifyType.NEW_TASK,
-      taskId: task.id,
-    }));
+    const notificationsData = workspaceUsers
+      .filter((u) => u.userId !== session.user.id)
+      .map((u) => ({
+        notifyCreatorId: session.user.id,
+        userId: u.userId,
+        workspaceId,
+        notifyType: NotifyType.NEW_TASK,
+        taskId: task.id,
+      }));
 
-    const filterNotificationsData = notificationsData.filter(
-      (data) => data.userId !== session.user.id
-    );
-
-    await db.notification.createMany({
-      data: filterNotificationsData,
-    });
+    if (notificationsData.length > 0) {
+      await db.notification.createMany({
+        data: notificationsData,
+      });
+    }
 
     return NextResponse.json(task, { status: 200 });
-  } catch (_) {
+  } catch (error) {
+    console.error("API /api/task/new ERROR:", error);
     return NextResponse.json("ERRORS.DB_ERROR", { status: 405 });
   }
 }

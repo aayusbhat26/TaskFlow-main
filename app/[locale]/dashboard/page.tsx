@@ -28,6 +28,21 @@ const GamingStatsWidget = dynamic(
   }
 );
 
+const UnreadMentionsWidget = dynamic(
+  () => import("@/components/dashboard/UnreadMentionsWidget").then(mod => ({ default: mod.UnreadMentionsWidget })),
+  {
+    loading: () => <div className="h-48 bg-muted animate-pulse rounded-lg" />,
+    ssr: false
+  }
+);
+
+const DailyGoalTracker = dynamic(
+  () => import("@/components/dashboard/DailyGoalTracker").then(mod => ({ default: mod.DailyGoalTracker })),
+  {
+    loading: () => <div className="h-48 bg-muted animate-pulse rounded-lg" />,
+    ssr: false
+  }
+);
 
 
 import { getInitialHomeRecentActivity } from "@/lib/api";
@@ -37,25 +52,21 @@ import { db } from "@/lib/db";
 const Dashboard = async () => {
   const session = await checkIfUserCompletedOnboarding("/dashboard");
 
-  const initialRecentActivity = await getInitialHomeRecentActivity(session.user.id);
-
-  const userSettings = await db.userSettings.findUnique({
-    where: { userId: session.user.id },
-  });
-  const showDSA = userSettings?.showDSA ?? true;
-
-  // Check if user has any imported DSA questions
-  let importedQuestionsCount = 0;
-  try {
-    importedQuestionsCount = await db.dSAQuestion.count({
+  // Run independent queries in parallel to speed up page load
+  const [initialRecentActivity, userSettings, importedQuestionsCount] = await Promise.all([
+    getInitialHomeRecentActivity(session.user.id),
+    db.userSettings.findUnique({
+      where: { userId: session.user.id },
+    }),
+    db.dSAQuestion.count({
       where: { isImported: true }
-    });
-    console.log('📊 Imported questions count:', importedQuestionsCount);
-  } catch (error) {
-    console.error('Error checking imported questions count:', error);
-    // Default to 0 if there's an error
-    importedQuestionsCount = 0;
-  }
+    }).catch((error) => {
+      console.error('Error checking imported questions count:', error);
+      return 0; // Default to 0 if there's an error
+    })
+  ]);
+
+  const showDSA = userSettings?.showDSA ?? true;
 
   return (
     <>
@@ -73,7 +84,15 @@ const Dashboard = async () => {
           {/* Main Dashboard Content */}
           <div className="space-y-4 sm:space-y-6 lg:space-y-8 px-3 sm:px-4 md:px-6 lg:px-8 pb-6 sm:pb-8">
 
-
+            {/* Goals & Notifications */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="min-h-[250px]">
+                <DailyGoalTracker />
+              </div>
+              <div className="min-h-[250px] max-h-[350px]">
+                <UnreadMentionsWidget />
+              </div>
+            </section>
             {/* DSA Progress Section - Curated Questions */}
             {showDSA && (
               <section className="space-y-2">

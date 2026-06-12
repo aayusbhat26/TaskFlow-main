@@ -141,6 +141,7 @@ export const authOptions: NextAuthOptions = {
         session.user.username = token.username;
         session.user.surname = token.surname;
         session.user.completedOnboarding = !!token.completedOnboarding;
+        session.user.plan = token.plan as string | undefined;
       }
 
       const user = await db.user.findUnique({
@@ -153,6 +154,7 @@ export const authOptions: NextAuthOptions = {
         session.user.image = user.image;
         session.user.completedOnboarding = user.completedOnboarding;
         session.user.username = user.username;
+        session.user.plan = user.plan;
       }
 
       return session;
@@ -174,6 +176,7 @@ export const authOptions: NextAuthOptions = {
         username: dbUser.username,
         email: dbUser.email,
         picture: dbUser.image,
+        plan: dbUser.plan,
       };
     },
   },

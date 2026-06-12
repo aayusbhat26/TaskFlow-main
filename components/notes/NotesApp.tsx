@@ -5,7 +5,7 @@ import { AutosaveIndicatorProvider } from '@/context/AutosaveIndicator';
 import { useToast } from '@/hooks/use-toast';
 import { useSocket } from '@/context/SocketProvider';
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { MarkdownNotesEditor } from './MarkdownNotesEditor';
+import { TipTapNoteEditor } from './TipTapNoteEditor';
 import { EnhancedNotesSidebar } from './EnhancedNotesSidebar';
 import { NotesWelcome } from './NotesWelcome';
 
@@ -322,6 +322,8 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
   const handleNoteCreate = useCallback(async (noteData: Partial<Note>) => {
     if (isCreating) return;
 
+    const defaultContent = '<h1>Welcome to your new note!</h1><p>Start writing your thoughts...</p>';
+
     // Create optimistic note
     const optimisticNote: Note = {
       id: `temp-${Date.now()}`,
@@ -349,7 +351,7 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
         children: 0,
       },
       blocks: [],
-      content: '# Welcome to your new note!\n\nStart writing your thoughts in **Markdown**...',
+      content: defaultContent,
       ...noteData
     };
 
@@ -369,7 +371,7 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
           isPublic: false,
           isFavorite: false,
           groupId: groupId,
-          content: '# Welcome to your new note!\n\nStart writing your thoughts in **Markdown**...',
+          content: defaultContent,
           ...noteData
         }),
       });
@@ -510,6 +512,12 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
       return prev;
     });
 
+    // If it's a temporary note ID, don't send a PATCH request to the server yet.
+    // The initial POST request will handle the first save, and subsequent edits will use the real ID.
+    if (noteId.startsWith('temp-')) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/notes/${noteId}`, {
         method: 'PATCH',
@@ -619,8 +627,7 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
         />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {selectedNote ? (
-            <MarkdownNotesEditor
-              key={selectedNote.id}
+            <TipTapNoteEditor
               note={selectedNote}
               onNoteUpdate={handleNoteUpdate}
               onNoteDelete={handleNoteDelete}

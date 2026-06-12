@@ -8,9 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Crown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { HoverCard } from "../ui/hover-card";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // Simple hover content component
 const HoverCardContent = ({ children, align }: { children: React.ReactNode; align?: "center" | "start" | "end" }) => (
@@ -41,6 +43,20 @@ export const ThemeSwitcher = ({
 }: Props) => {
   const { setTheme } = useTheme();
   const t = useTranslations("COMMON");
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const handleThemeChange = (theme: string) => {
+    const freeThemes = ['light', 'dark', 'system'];
+    const plan = session?.user?.plan || 'FREE';
+    
+    if (!freeThemes.includes(theme) && plan === 'FREE') {
+      alert("This theme is only available on the Pro or Business plans.");
+      router.push('/upgrade');
+      return;
+    }
+    setTheme(theme);
+  };
 
   return (
     <HoverCard openDelay={250} closeDelay={250}>
@@ -53,44 +69,44 @@ export const ThemeSwitcher = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align={alignDropdown} className="max-h-80 overflow-y-auto">
-          <DropdownMenuItem onClick={() => setTheme("light")}>
+          <DropdownMenuItem onClick={() => handleThemeChange("light")}>
             Light
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>
+          <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
             Dark
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("system")}>
+          <DropdownMenuItem onClick={() => handleThemeChange("system")}>
             System
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("ocean")}>
-            Ocean
+          <DropdownMenuItem onClick={() => handleThemeChange("ocean")}>
+            Ocean <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("forest")}>
-            Forest
+          <DropdownMenuItem onClick={() => handleThemeChange("forest")}>
+            Forest <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("sunset")}>
-            Sunset
+          <DropdownMenuItem onClick={() => handleThemeChange("sunset")}>
+            Sunset <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("midnight")}>
-            Midnight
+          <DropdownMenuItem onClick={() => handleThemeChange("midnight")}>
+            Midnight <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("cherry")}>
-            Cherry
+          <DropdownMenuItem onClick={() => handleThemeChange("cherry")}>
+            Cherry <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("cyber")}>
-            Cyber
+          <DropdownMenuItem onClick={() => handleThemeChange("cyber")}>
+            Cyber <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("autumn")}>
-            Autumn
+          <DropdownMenuItem onClick={() => handleThemeChange("autumn")}>
+            Autumn <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("lavender")}>
-            Lavender
+          <DropdownMenuItem onClick={() => handleThemeChange("lavender")}>
+            Lavender <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("arctic")}>
-            Arctic
+          <DropdownMenuItem onClick={() => handleThemeChange("arctic")}>
+            Arctic <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("volcano")}>
-            Volcano
+          <DropdownMenuItem onClick={() => handleThemeChange("volcano")}>
+            Volcano <Crown className="w-4 h-4 ml-auto text-yellow-500" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

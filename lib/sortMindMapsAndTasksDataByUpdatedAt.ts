@@ -10,7 +10,14 @@ export const sortMindMapsAndTasksDataByUpdatedAt = (
     | HomeRecentTasksAndMindMapsActivity
     | AssignedToMeTaskAndMindMapsWorkspaceRecentActivity
 ) => {
-  const sortedArray = [...data.mindMaps, ...data.tasks].sort((a, b) => {
+  const sortedArray = [
+    ...data.mindMaps, 
+    ...data.tasks,
+    ...(data.notes || []),
+    ...(data.pomodoros || []),
+    ...(data.dsa || []),
+    ...(data.groups || [])
+  ].sort((a, b) => {
     return new Date(b.updated.at).getTime() - new Date(a.updated.at).getTime();
   });
 

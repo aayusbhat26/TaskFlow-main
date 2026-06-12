@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // Skeleton component for loading states
 const Skeleton = ({ className }: { className?: string }) => (
-  <div className={`animate-pulse bg-muted rounded ${className}`} />
+  <div className={`animate-pulse bg-accent/20 rounded ${className}`} />
 );
 
 export default function TaskLoading() {
