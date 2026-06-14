@@ -30,7 +30,7 @@ interface Props {
   children: React.ReactNode;
   className?: string;
   color?: MindMapItemColors;
-  shape?: "rectangle" | "circle" | "diamond" | "square";
+  shape?: "rectangle" | "circle" | "diamond" | "square" | "triangle" | "parallelogram" | "hexagon" | "cylinder" | "cloud" | "ellipse" | "pentagon" | "octagon" | "star";
   emoji?: string;
   isEditing: boolean;
   onIsEdit: () => void;

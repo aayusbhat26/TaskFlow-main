@@ -55,7 +55,7 @@ export const User = ({ profileImage, username, email, name, surname }: Props) =>
           className="w-10 h-10"
           profileImage={profileImage}
           fallbackText={initials}
-          userId={user.id || user.username || user.email}
+          userId={user.username || user.email}
         />
       </DropdownMenuTrigger>
              <DropdownMenuContent align="end" sideOffset={10} className="w-64 z-50 relative">
@@ -71,7 +71,7 @@ export const User = ({ profileImage, username, email, name, surname }: Props) =>
           ) : (
             <div className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white",
-              getRandomColor(user.id || user.username || user.email)
+              getRandomColor(user.username || user.email)
             )}>
               {initials}
             </div>
@@ -154,8 +154,8 @@ export const User = ({ profileImage, username, email, name, surname }: Props) =>
                </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
-          <DropdownMenuItem className="cursor-pointer gap-2 px-3 py-2" asChild>
-            <Link href={"/dashboard/settings"}>
+          <DropdownMenuItem className="cursor-pointer gap-2 px-3 py-2">
+            <Link href={"/dashboard/settings"} className="flex gap-2 items-center w-full">
               <Settings2 size={16} /> {t("SETTINGS")}
             </Link>
           </DropdownMenuItem>

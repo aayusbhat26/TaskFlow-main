@@ -12,7 +12,7 @@ interface Props {
   refetchWorkspaces?: () => void;
 }
 
-export const WorkspaceTab = ({ workspace, workspaceId }: Props) => {
+export const WorkspaceTab = ({ workspace, workspaceId, refetchWorkspaces }: Props) => {
   return (
     <Tabs defaultValue="overview">
       <TabsList className="mb-6">

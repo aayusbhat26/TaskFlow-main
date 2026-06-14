@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { PointType, StreakType, LeaderboardType } from '@prisma/client';
 
 interface GamingAction {
@@ -10,6 +10,7 @@ interface GamingAction {
 }
 
 export function useGaming() {
+  const { toast } = useToast();
   const executeGamingAction = useCallback(async (action: GamingAction) => {
     try {
       const response = await fetch('/api/gaming/stats', {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LeetCodeStats } from '@/services/external/leetcode';
+// import { LeetCodeStats } from '@/services/external/leetcode';
+type LeetCodeStats = any;
 import axios from 'axios';
 
 interface UseLeetCodeStatsResult {

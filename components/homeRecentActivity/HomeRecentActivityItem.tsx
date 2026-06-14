@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { UserHoverInfo } from "../common/UserHoverInfoCard";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "../ui/button";
-import { Star, Workflow, PencilRuler } from "lucide-react";
+import { Star, Workflow, PencilRuler, Hash, Users, StickyNote, Timer, Code } from "lucide-react";
 import { StarSvg } from "../common/StarSvg";
 
 interface Props {
@@ -46,7 +46,9 @@ export const HomeRecentActivityItem = ({
       case "dsa":
         return c("EDITED_ITEM_SENTENCE.DSA");
       case "group":
-        return "Updated members";
+        return "Updated group";
+      case "channel":
+        return "Updated channel";
       default:
         return c("EDITED_ITEM_SENTENCE.TASK");
     }
@@ -61,8 +63,15 @@ export const HomeRecentActivityItem = ({
                 className="sm:h-10 sm:w-10 h-8 w-8 shrink-0"
                 selectedEmoji={emoji}
               />
-              <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-sm border" title={type === "mindMap" ? "Mind Map" : "Task"}>
-                {type === "mindMap" ? <Workflow className="w-3 h-3 text-primary" /> : <PencilRuler className="w-3 h-3 text-primary" />}
+              <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-sm border" title={type}>
+                {type === "mindMap" ? <Workflow className="w-3 h-3 text-primary" /> : 
+                 type === "task" ? <PencilRuler className="w-3 h-3 text-primary" /> :
+                 type === "channel" ? <Hash className="w-3 h-3 text-primary" /> :
+                 type === "group" ? <Users className="w-3 h-3 text-primary" /> :
+                 type === "note" ? <StickyNote className="w-3 h-3 text-primary" /> :
+                 type === "pomodoro" ? <Timer className="w-3 h-3 text-primary" /> :
+                 type === "dsa" ? <Code className="w-3 h-3 text-primary" /> :
+                 <PencilRuler className="w-3 h-3 text-primary" />}
               </div>
             </div>
             <div className="w-full">

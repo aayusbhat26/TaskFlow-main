@@ -60,7 +60,7 @@ export const SidebarContainer = ({
           refetchWorkspaces={refetchWorkspaces}
           showDSA={showDSA}
         />
-        {!(pathname && (pathname.includes("/notes") || pathname.includes("/chat") || pathname.includes("/groups/"))) && (
+        {!(pathname && (pathname.includes("/notes") || pathname.includes("/chat") || pathname.includes("/groups/") || pathname.includes("/channel/"))) && (
           <OptionsSidebar
             createdWorkspaces={createdWorkspaces.length}
             userAdminWorkspaces={userAdminWorkspaces}

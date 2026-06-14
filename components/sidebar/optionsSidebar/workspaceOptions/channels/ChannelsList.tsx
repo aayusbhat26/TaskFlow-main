@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Hash, Volume2, Video, Mic, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { Hash, Volume2, Video, Mic, ChevronDown, ChevronRight, Plus, Keyboard } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Channel, ChannelCategory, ChannelType } from "@prisma/client";
@@ -46,6 +46,7 @@ export const ChannelsList = ({ workspaceId }: Props) => {
       case "VOICE": return <Volume2 size={16} className="text-muted-foreground" />;
       case "VIDEO": return <Video size={16} className="text-muted-foreground" />;
       case "STAGE": return <Mic size={16} className="text-muted-foreground" />;
+      case "TYPING_RACE": return <Keyboard size={16} className="text-primary" />;
       default: return <Hash size={16} className="text-muted-foreground" />;
     }
   };

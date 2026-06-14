@@ -105,6 +105,29 @@ export const GET = async (request: Request) => {
           },
           take: 10,
         },
+        notes: {
+          include: {
+            author: { select: { id: true, username: true, image: true, name: true, surname: true } },
+            tags: { select: { id: true, color: true, name: true } },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        },
+        pomodoroSessions: {
+          include: {
+            user: { select: { id: true, username: true, image: true, name: true, surname: true } },
+          },
+          orderBy: { completedAt: "desc" },
+          take: 10,
+        },
+        groups: {
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        },
+        channels: {
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        },
       },
     });
 
@@ -147,10 +170,83 @@ export const GET = async (request: Request) => {
         })
       : [];
 
+    const noteInfo: WorkspaceRecentActivity[] = workspaceData
+      ? workspaceData.notes.map((note) => ({
+          id: note.id,
+          title: note.title || "Untitled",
+          emoji: note.icon || "📝",
+          type: "note",
+          updated: {
+            at: note.updatedAt,
+            by: note.author,
+          },
+          starred: note.isFavorite,
+          tags: (note.tags as any) || [],
+          assignedTo: [],
+          link: `/dashboard/workspace/${workspaceId}`,
+        }))
+      : [];
+
+    const pomodoroInfo: WorkspaceRecentActivity[] = workspaceData
+      ? workspaceData.pomodoroSessions.map((pomodoro) => ({
+          id: pomodoro.id,
+          title: "Pomodoro Session",
+          emoji: "🍅",
+          type: "pomodoro",
+          updated: {
+            at: pomodoro.completedAt,
+            by: pomodoro.user,
+          },
+          starred: false,
+          tags: [],
+          assignedTo: [],
+          link: `/dashboard/pomodoro`,
+        }))
+      : [];
+
+    const groupInfo: WorkspaceRecentActivity[] = workspaceData
+      ? workspaceData.groups.map((group) => ({
+          id: group.id,
+          title: group.name,
+          emoji: "👥",
+          type: "group",
+          updated: {
+            at: group.updatedAt,
+            by: null,
+          },
+          starred: false,
+          tags: [],
+          assignedTo: [],
+          link: `/dashboard/workspace/${workspaceId}/groups/${group.id}`,
+        }))
+      : [];
+
+    const channelInfo: WorkspaceRecentActivity[] = workspaceData
+      ? workspaceData.channels.map((channel) => ({
+          id: channel.id,
+          title: channel.name,
+          emoji: channel.type === "TYPING_RACE" ? "⌨️" : channel.type === "VIDEO" ? "📹" : channel.type === "VOICE" ? "🔊" : "💬",
+          type: "channel",
+          updated: {
+            at: channel.updatedAt,
+            by: null,
+          },
+          starred: false,
+          tags: [],
+          assignedTo: [],
+          link: `/dashboard/workspace/${workspaceId}/channel/${channel.id}`,
+        }))
+      : [];
+
     return NextResponse.json(
       sortMindMapsAndTasksDataByUpdatedAt({
         tasks: taskInfo,
         mindMaps: mindMapInfo,
+        notes: noteInfo,
+        pomodoros: pomodoroInfo,
+        groups: groupInfo,
+        channels: channelInfo,
+        dsa: [],
       }),
       { status: 200 }
     );

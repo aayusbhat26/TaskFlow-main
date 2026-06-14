@@ -10,10 +10,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { Hash, Volume2, Video, Mic, Plus } from "lucide-react";
+import { Hash, Volume2, Video, Mic, Plus, Keyboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { newChannelSchema, NewChannelSchema } from "@/schema/channelSchema";
-import { ChannelType } from "@prisma/client";
 
 interface Props {
   workspaceId: string;
@@ -32,7 +31,7 @@ export const NewChannelModal = ({ workspaceId, categoryId, categories, children 
     resolver: zodResolver(newChannelSchema),
     defaultValues: {
       name: "",
-      type: ChannelType.VOICE,
+      type: "VOICE" as any,
       workspaceId,
       categoryId: categoryId || undefined,
     },
@@ -84,21 +83,29 @@ export const NewChannelModal = ({ workspaceId, categoryId, categories, children 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Channel Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
+                        <SelectValue placeholder="Select type">
+                          {field.value === "VOICE" && "Voice"}
+                          {field.value === "VIDEO" && "Video"}
+                          {field.value === "STAGE" && "Stage"}
+                          {field.value === "TYPING_RACE" && "Typing Race"}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={ChannelType.VOICE}>
+                      <SelectItem value="VOICE">
                         <div className="flex items-center"><Volume2 className="mr-2 h-4 w-4" /> Voice</div>
                       </SelectItem>
-                      <SelectItem value={ChannelType.VIDEO}>
+                      <SelectItem value="VIDEO">
                         <div className="flex items-center"><Video className="mr-2 h-4 w-4" /> Video</div>
                       </SelectItem>
-                      <SelectItem value={ChannelType.STAGE}>
+                      <SelectItem value="STAGE">
                         <div className="flex items-center"><Mic className="mr-2 h-4 w-4" /> Stage</div>
+                      </SelectItem>
+                      <SelectItem value="TYPING_RACE">
+                        <div className="flex items-center"><Keyboard className="mr-2 h-4 w-4" /> Typing Race</div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -128,10 +135,12 @@ export const NewChannelModal = ({ workspaceId, categoryId, categories, children 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                  <Select onValueChange={field.onChange} value={field.value || undefined} defaultValue={field.value || undefined}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="No category" />
+                        <SelectValue placeholder="No category">
+                          {categories.find(cat => cat.id === field.value)?.name || "No Category"}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

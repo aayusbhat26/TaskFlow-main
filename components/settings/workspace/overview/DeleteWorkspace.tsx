@@ -44,10 +44,8 @@ interface Props {
   refetchWorkspaces?: () => void;
 }
 
-export const DeleteWorkspace = ({ workspace: { id, name } }: Props) => {
+export const DeleteWorkspace = ({ workspace: { id, name }, refetchWorkspaces }: Props) => {
   const t = useTranslations("EDIT_WORKSPACE.DELETE");
-  // Accept refetchWorkspaces from props
-  const refetchWorkspaces = (typeof workspace === 'object' && 'refetchWorkspaces' in workspace) ? (workspace as any).refetchWorkspaces : undefined;
   const { toast } = useToast();
   const m = useTranslations("MESSAGES");
   const lang = useLocale();

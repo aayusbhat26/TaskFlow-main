@@ -115,6 +115,7 @@ export const SoundSettingsForm = ({ userSettings }: Props) => {
   const { mutate: updateSettings, isPending: isUpdating } = useMutation({
     mutationFn: async (formData: SoundSettingsSchema) => {
       await axios.post("/api/settings/sound/update", formData);
+      return formData;
     },
     onError: (err: AxiosError) => {
       const error = err?.response?.data ? err.response.data : "ERRORS_DEFAULT";

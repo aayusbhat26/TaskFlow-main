@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       totalCompleted: totalCompletedToday,
       dailyGoal,
       progress,
-      currentStreak: userStreak?.streak || 0,
+      currentStreak: userStreak?.currentCount || 0,
     });
   } catch (error) {
     console.error("Error fetching daily goal stats:", error);

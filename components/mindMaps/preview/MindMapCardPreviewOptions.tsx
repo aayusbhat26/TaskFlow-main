@@ -142,7 +142,7 @@ export const MindMapCardPreviewOptions = ({
             </DropdownMenuItem>
             {userRole && userRole !== "READ_ONLY" && (
               <>
-                <DropdownMenuItem className="cursor-pointer" asChild>
+                <DropdownMenuItem className="cursor-pointer">
                   <Link
                     href={`/dashboard/workspace/${workspaceId}/mind-maps/mind-map/${mindMapId}/edit`}
                   >

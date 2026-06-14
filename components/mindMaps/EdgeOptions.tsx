@@ -89,7 +89,7 @@ export const EdgeOptions = ({
             | "customBezier"
             | "customStraight"
             | "customStepSharp"
-            | "customStepRounded") ?? "customBeizer",
+            | "customStepRounded") ?? "customBezier",
         animated: clickedEdge?.animated ?? false,
         color: clickedEdge?.data?.color ?? EdgeColor.DEFAULT,
       });

@@ -80,8 +80,8 @@ export const ReadOnlyContent = ({ task, isSavedByUser, userRole }: Props) => {
                 workspaceId={task.workspaceId}
               />
               <ReadOnlyCalendar
-                from={task.taskDate?.from}
-                to={task.taskDate?.to}
+                from={task.taskDate?.from ? new Date(task.taskDate.from) : undefined}
+                to={task.taskDate?.to ? new Date(task.taskDate.to) : undefined}
               />
               {task.tags &&
                 task.tags.map((tag) => <LinkTag key={tag.id} tag={tag} />)}
@@ -91,7 +91,7 @@ export const ReadOnlyContent = ({ task, isSavedByUser, userRole }: Props) => {
 
         {/* Task Content Section */}
         <div className="w-full">
-          <ReadOnlyContentRenderer content={task.content as JSON} />
+          <ReadOnlyContentRenderer content={task.content as any} />
         </div>
       </CardContent>
       <CardFooter className="w-full flex items-center justify-center gap-2 text-xs">

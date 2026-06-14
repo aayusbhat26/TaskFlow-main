@@ -208,6 +208,7 @@ enum ChannelType {
   VOICE
   VIDEO
   STAGE
+  TYPING_RACE
 }
 
 model ChannelCategory {

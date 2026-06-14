@@ -166,7 +166,7 @@ export class GamingService {
         case AchievementCategory.MASTERY:
           if (achievement.name.includes('Code') || achievement.name.includes('Algorithm') || achievement.name.includes('Data Structure')) {
             // DSA-related achievements - count completed DSA questions
-            const dsaCompletedCount = await db.dsaProgress.count({
+            const dsaCompletedCount = await db.dSAProgress.count({
               where: {
                 userId: user.id,
                 status: 'COMPLETED'
@@ -192,7 +192,7 @@ export class GamingService {
           if (achievement.name.includes('Social Butterfly')) {
             // Count chat messages sent by user
             const messageCount = await db.chatMessage.count({
-              where: { senderId: user.id }
+              where: { authorId: user.id }
             });
             currentProgress = messageCount;
           }

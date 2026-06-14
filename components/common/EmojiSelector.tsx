@@ -72,7 +72,6 @@ export const EmojiSelector = ({
         {children}
       </DropdownMenuTrigger>
       <DropdownMenuContent 
-        asChild 
         align={align || "center"} 
         side="bottom"
         sideOffset={8}

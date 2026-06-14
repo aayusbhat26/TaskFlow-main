@@ -27,8 +27,8 @@ export const PerformanceMonitor = () => {
     }
 
     // Send to analytics if needed
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'navigation_performance', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'navigation_performance', {
         navigation_time: Math.round(navigationDuration),
         destination: pathname,
         is_slow: navigationDuration > 1000

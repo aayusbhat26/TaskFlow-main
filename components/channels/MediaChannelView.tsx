@@ -209,7 +209,7 @@ export function MediaChannelView({ channel, workspace, currentUser, onOpenMobile
             </Button>
           )}
           <h1 className="text-lg font-bold flex items-center gap-2 text-foreground">
-            {channel.type === "VOICE" ? <Mic className="w-5 h-5 text-green-500" /> : <Video className="w-5 h-5 text-blue-500" />}
+            {channel.type === "VOICE" ? <Mic className="w-5 h-5 text-green-500" /> : channel.type === "VIDEO" ? <Video className="w-5 h-5 text-blue-500" /> : <Video className="w-5 h-5 text-blue-500" />}
             {channel.name}
           </h1>
           <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">

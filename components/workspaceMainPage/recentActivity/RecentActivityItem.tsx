@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { TagItem } from "./TagItem";
 import { AssignedToTaskUser } from "./AssignedToTaskUser";
-import { Flag, Workflow, PencilRuler } from "lucide-react";
+import { Flag, Workflow, PencilRuler, Hash, Users, StickyNote, Timer, Code } from "lucide-react";
 
 interface Props {
   activity: WorkspaceRecentActivity;
@@ -31,10 +31,26 @@ export const RecentActivityItem = ({
   const dateTime = new Date(updated.at);
   const now = new Date();
 
-  const itemTypeSentence =
-    type === "mindMap"
-      ? c("EDITED_ITEM_SENTENCE.MIND_MAP")
-      : c("EDITED_ITEM_SENTENCE.TASK");
+  const itemTypeSentence = (() => {
+    switch (type) {
+      case "mindMap":
+        return c("EDITED_ITEM_SENTENCE.MIND_MAP");
+      case "task":
+        return c("EDITED_ITEM_SENTENCE.TASK");
+      case "note":
+        return c("EDITED_ITEM_SENTENCE.NOTE");
+      case "pomodoro":
+        return c("EDITED_ITEM_SENTENCE.POMODORO");
+      case "dsa":
+        return c("EDITED_ITEM_SENTENCE.DSA");
+      case "group":
+        return "Updated group";
+      case "channel":
+        return "Updated channel";
+      default:
+        return c("EDITED_ITEM_SENTENCE.TASK");
+    }
+  })();
   return (
     <Link href={link}>
       <Card className="bg-background border-none hover:bg-accent transition-colors duration-200 p-2 h-full">
@@ -45,8 +61,15 @@ export const RecentActivityItem = ({
                 className={`shrink-0 ${viewMode === "grid" ? "h-10 w-10 sm:h-12 sm:w-12" : "sm:h-16 sm:w-16 h-12 w-12"}`}
                 selectedEmoji={emoji}
               />
-              <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-sm border" title={type === "mindMap" ? "Mind Map" : "Task"}>
-                {type === "mindMap" ? <Workflow className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> : <PencilRuler className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />}
+              <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-sm border" title={type}>
+                {type === "mindMap" ? <Workflow className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> : 
+                 type === "task" ? <PencilRuler className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> :
+                 type === "channel" ? <Hash className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> :
+                 type === "group" ? <Users className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> :
+                 type === "note" ? <StickyNote className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> :
+                 type === "pomodoro" ? <Timer className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> :
+                 type === "dsa" ? <Code className="w-3 h-3 sm:w-4 sm:h-4 text-primary" /> :
+                 <PencilRuler className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />}
               </div>
             </div>
             <div className="w-full">
@@ -63,7 +86,7 @@ export const RecentActivityItem = ({
                   </div>
                 )}
               </div>
-              {updated.by && (
+              {updated.by ? (
                 <div className="flex flex-col md:flex-row md:items-center md:gap-1">
                   <p className="text-muted-foreground">{itemTypeSentence}</p>{" "}
                   {format.relativeTime(dateTime, now)}{" "}
@@ -71,6 +94,11 @@ export const RecentActivityItem = ({
                   <div className="flex items-center gap-1">
                     <UserHoverInfo className="px-0" user={updated.by} />
                   </div>
+                </div>
+              ) : (
+                <div className="flex flex-col md:flex-row md:items-center md:gap-1">
+                  <p className="text-muted-foreground">{itemTypeSentence}</p>{" "}
+                  <span className="text-muted-foreground">{format.relativeTime(dateTime, now)}</span>
                 </div>
               )}
               <div className="flex items-center flex-wrap gap-1 mt-2">

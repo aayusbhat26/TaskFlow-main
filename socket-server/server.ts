@@ -268,6 +268,27 @@ io.on("connection", (socket) => {
     socket.to(`workspace:${data.workspaceId}`).emit("mindmap-sync", data.flow);
   });
 
+  // Typing Test Game
+  socket.on("typing-game-join", (data: { workspaceId: string; user: any }) => {
+    socket.to(`workspace:${data.workspaceId}`).emit("typing-game-join", data.user);
+  });
+
+  socket.on("typing-game-start", (data: { workspaceId: string; paragraph: string }) => {
+    io.to(`workspace:${data.workspaceId}`).emit("typing-game-start", data.paragraph);
+  });
+
+  socket.on("typing-game-progress", (data: { workspaceId: string; progress: number; wpm: number; user: any }) => {
+    socket.to(`workspace:${data.workspaceId}`).emit("typing-game-progress", data);
+  });
+
+  socket.on("typing-game-end", (data: { workspaceId: string; finalWpm: number; user: any }) => {
+    socket.to(`workspace:${data.workspaceId}`).emit("typing-game-end", data);
+  });
+
+  socket.on("typing-game-request-players", (data: { workspaceId: string }) => {
+    socket.to(`workspace:${data.workspaceId}`).emit("typing-game-request-players");
+  });
+
   // Disconnect
   socket.on("disconnect", () => {
     const user = activeUsers.get(socket.id);

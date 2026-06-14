@@ -130,6 +130,7 @@ export const getTaskData = async (task_id: string, userId: string) => {
       savedTask: true,
       creator: true,
       updatedBy: true,
+      taskDate: true,
       workspace: {
         include: {
           subscribers: true,

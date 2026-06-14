@@ -12,26 +12,12 @@ import { NotesWelcome } from './NotesWelcome';
 // Cache for note content
 const noteContentCache = new Map<string, Note>();
 
-// Block Types
-enum BlockType {
-  TEXT = 'TEXT',
-  HEADING_1 = 'HEADING_1',
-  HEADING_2 = 'HEADING_2',
-  HEADING_3 = 'HEADING_3',
-  BULLET_LIST = 'BULLET_LIST',
-  NUMBERED_LIST = 'NUMBERED_LIST',
-  TODO = 'TODO',
-  QUOTE = 'QUOTE',
-  CODE = 'CODE',
-  DIVIDER = 'DIVIDER',
-  CALLOUT = 'CALLOUT',
-  IMAGE = 'IMAGE',
-}
+import { BlockType } from '@prisma/client';
 
 interface Block {
   id: string;
   type: BlockType;
-  content: string;
+  content: any;
   properties?: {
     checked?: boolean;
     level?: number;
@@ -334,7 +320,6 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
       isArchived: false,
       isFavorite: false,
       workspaceId: noteData.workspaceId || null,
-      groupId: groupId || null,
       position: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -627,11 +612,13 @@ export function NotesApp({ notes, workspaces, currentUser, groupId }: NotesAppPr
         />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {selectedNote ? (
-            <TipTapNoteEditor
+              <TipTapNoteEditor
+              key={selectedNote.id}
               note={selectedNote}
               onNoteUpdate={handleNoteUpdate}
               onNoteDelete={handleNoteDelete}
               isLoading={isLoading}
+              currentUser={currentUser}
             />
           ) : (
             <NotesWelcome

@@ -33,7 +33,6 @@ export const FirstStep = ({ profileImage }: Props) => {
     resolver: zodResolver(additionalUserInfoFirstPart),
     defaultValues: {
       name: name ? name : "",
-      surname: surname ? surname : "",
     },
   });
   const t = useTranslations("ONBOARDING_FORM");

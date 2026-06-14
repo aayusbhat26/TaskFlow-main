@@ -285,6 +285,42 @@ export const GET = async (request: Request) => {
       starred: false,
     }));
 
+    const channels = await db.channel.findMany({
+      where: {
+        workspace: {
+          subscribers: {
+            some: {
+              userId,
+            },
+          },
+        },
+      },
+      include: {
+        workspace: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      skip: skipValue,
+      take: takeValue,
+    });
+
+    const channelsData: HomeRecentActivity[] = channels.map((channel) => ({
+      id: channel.id,
+      title: channel.name,
+      emoji: channel.type === "TYPING_RACE" ? "⌨️" : channel.type === "VIDEO" ? "📹" : channel.type === "VOICE" ? "🔊" : "💬",
+      link: `/dashboard/workspace/${channel.workspaceId}/channel/${channel.id}`,
+      workspaceName: channel.workspace.name,
+      createdAt: new Date(channel.createdAt),
+      type: "channel",
+      updated: {
+        at: new Date(channel.updatedAt),
+        by: null,
+      },
+      workspaceId: channel.workspaceId,
+      starred: false,
+    }));
+
     return NextResponse.json(
       sortMindMapsAndTasksDataByUpdatedAt({
         tasks: tasksData,
@@ -293,6 +329,7 @@ export const GET = async (request: Request) => {
         pomodoros: pomodorosData,
         dsa: dsaData,
         groups: groupsData,
+        channels: channelsData,
       }),
       { status: 200 }
     );

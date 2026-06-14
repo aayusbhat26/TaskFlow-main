@@ -31,10 +31,9 @@ const Select = ({ children, value: controlledValue, defaultValue, onValueChange,
   const handleValueChange = React.useCallback((newValue: string) => {
     if (disabled) return
 
+    setUncontrolledValue(newValue)
     if (onValueChange) {
       onValueChange(newValue)
-    } else {
-      setUncontrolledValue(newValue)
     }
     setOpen(false)
   }, [onValueChange, disabled])
@@ -122,14 +121,15 @@ SelectTrigger.displayName = "SelectTrigger"
 interface SelectValueProps {
   placeholder?: string
   className?: string
+  children?: React.ReactNode
 }
 
-const SelectValue = ({ placeholder, className }: SelectValueProps) => {
+const SelectValue = ({ placeholder, className, children }: SelectValueProps) => {
   const { value } = useSelect()
 
   return (
     <span className={cn("line-clamp-1", className)}>
-      {value || placeholder}
+      {children || value || placeholder}
     </span>
   )
 }

@@ -70,7 +70,7 @@ export const SolvedQuestionsContainer = ({}: Props) => {
     try {
       setIsRefetching(true);
       // For now, set empty data since external services are removed
-      setData({ leetcode: [], codeforces: [] });
+      setData({ leetcode: [], codeforces: [], lastUpdated: new Date().toISOString() });
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

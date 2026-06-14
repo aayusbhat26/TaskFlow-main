@@ -1,8 +1,7 @@
 import {
   CustomColors,
-  Message,
+  ChatMessage,
   MessageReaction,
-  MessageRead,
   MindMap,
   Notification,
   savedMindMaps,
@@ -39,8 +38,8 @@ export interface ExtendedTask extends Task {
   tags: Tag[];
   taskDate?: {
     id: string;
-    from: Date | undefined;
-    to: Date | undefined;
+    from: string | null;
+    to: string | null;
   };
   savedTask?: savedTask[];
   creator: UserInfo;
@@ -102,7 +101,7 @@ export interface UsersAssignedToMindMapInfo extends Workspace {
   subscribers: AssignedToMindMapUser[];
 }
 
-export type AssignedItemType = "task" | "mindMap" | "note" | "pomodoro" | "dsa" | "group";
+export type AssignedItemType = "task" | "mindMap" | "note" | "pomodoro" | "dsa" | "group" | "channel";
 
 export interface AssignedToMeDataItem {
   id: string;
@@ -127,6 +126,7 @@ export interface AssignedToMeTaskAndMindMaps {
   pomodoros: AssignedToMeDataItem[];
   dsa: AssignedToMeDataItem[];
   groups?: AssignedToMeDataItem[];
+  channels?: AssignedToMeDataItem[];
 }
 
 export interface CalendarItem {
@@ -220,6 +220,7 @@ export interface AssignedToMeTaskAndMindMapsWorkspaceRecentActivity {
   pomodoros: WorkspaceRecentActivity[];
   dsa: WorkspaceRecentActivity[];
   groups?: WorkspaceRecentActivity[];
+  channels?: WorkspaceRecentActivity[];
 }
 
 export interface ExtendedWorkspace extends Workspace {
@@ -241,7 +242,7 @@ export interface AdditionalResource {
   mimeType?: string;
 }
 
-export interface ExtendedMessage extends Message {
+export interface ExtendedMessage extends ChatMessage {
   additionalResources: AdditionalResource[];
   sender: {
     id: string;
@@ -249,6 +250,5 @@ export interface ExtendedMessage extends Message {
     image?: string | null;
   };
   reactions?: MessageReaction[];
-  readBy?: MessageRead[];
   replyTo?: ExtendedMessage;
 }

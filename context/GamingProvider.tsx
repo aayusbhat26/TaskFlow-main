@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface GamingContextType {
   showAchievementUnlocked: (achievementName: string) => void;
@@ -12,6 +12,7 @@ interface GamingContextType {
 const GamingContext = createContext<GamingContextType | undefined>(undefined);
 
 export function GamingProvider({ children }: { children: ReactNode }) {
+  const { toast } = useToast();
   const showAchievementUnlocked = useCallback((achievementName: string) => {
     toast({
       title: "🏆 Achievement Unlocked!",

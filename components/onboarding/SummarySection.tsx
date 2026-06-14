@@ -12,6 +12,7 @@ import { useOnboardingForm } from "@/context/OnboardingForm";
 import { UserAvatar } from "../ui/user-avatar";
 import { useTranslations } from "next-intl";
 
+
 export const SummarySection = () => {
   const { name, surname, profileImage, useCase, currentStep } =
     useOnboardingForm();
@@ -29,11 +30,9 @@ export const SummarySection = () => {
             {name && <p>{name}</p>}
           </div>
           {!useCase && <span className="bg-muted rounded-md w-24 h-8"></span>}
-          {useCase && (
+          {useCase === "STUDY" && (
             <p>
-              {useCase === "WORK" && t("SECOND_STEP.WORK")}
-              {useCase === "STUDY" && t("SECOND_STEP.STUDY")}
-              {useCase === "PERSONAL_USE" && t("SECOND_STEP.PERSONAL")}
+              {t("SECOND_STEP.STUDY")}
             </p>
           )}
         </div>

@@ -103,6 +103,11 @@ export const GET = async (request: Request) => {
               starred: task.savedTask.length > 0,
             })),
             mindMaps: [],
+            notes: [],
+            pomodoros: [],
+            dsa: [],
+            groups: [],
+            channels: [],
           };
 
           return NextResponse.json(
@@ -127,6 +132,11 @@ export const GET = async (request: Request) => {
               starred: mindMap.savedMindMaps.length > 0,
             })),
             tasks: [],
+            notes: [],
+            pomodoros: [],
+            dsa: [],
+            groups: [],
+            channels: [],
           };
 
           return NextResponse.json(
@@ -166,6 +176,11 @@ export const GET = async (request: Request) => {
               },
               starred: mindMap.savedMindMaps.length > 0,
             })),
+            notes: [],
+            pomodoros: [],
+            dsa: [],
+            groups: [],
+            channels: [],
           };
 
           return NextResponse.json(
@@ -241,6 +256,11 @@ export const GET = async (request: Request) => {
       const assignedData: AssignedToMeTaskAndMindMaps = {
         tasks: [],
         mindMaps: [],
+        notes: [],
+        pomodoros: [],
+        dsa: [],
+        groups: [],
+        channels: [],
       };
 
       switch (currentType) {

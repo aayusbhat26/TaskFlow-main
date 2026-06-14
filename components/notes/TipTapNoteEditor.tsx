@@ -18,6 +18,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit3, Type, List as ListIcon, ListOrdered, Code, Code2, Quote, Undo, Redo, Heading1, Heading2, Heading3, Minus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import * as Y from 'yjs';
+import { WebrtcProvider } from 'y-webrtc';
+import Collaboration from '@tiptap/extension-collaboration';
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
+
+const USER_COLORS = ['#f783ac', '#8ce99a', '#74c0fc', '#ffa94d', '#d0ebff', '#ffc9c9'];
 
 interface Note {
   id: string;
@@ -31,6 +37,7 @@ interface TipTapNoteEditorProps {
   onNoteUpdate: (noteId: string, updates: Partial<Note>) => Promise<void>;
   onNoteDelete: (noteId: string) => Promise<void>;
   isLoading?: boolean;
+  currentUser?: { id: string; name: string; username: string; image?: string | null };
 }
 
 export function TipTapNoteEditor({
@@ -38,6 +45,7 @@ export function TipTapNoteEditor({
   onNoteUpdate,
   onNoteDelete,
   isLoading = false,
+  currentUser,
 }: TipTapNoteEditorProps) {
   const { toast } = useToast();
   const { onSetStatus, status } = useAutosaveIndicator();
@@ -45,6 +53,15 @@ export function TipTapNoteEditor({
   
   // Track original content to properly detect changes
   const originalTitle = useRef<string>(note?.title || 'Untitled');
+
+  const [yProvider] = useState(() => {
+    if (!note?.id) return null;
+    const ydoc = new Y.Doc();
+    const provider = new WebrtcProvider(`taskflow-note-${note.id}`, ydoc, {
+      signaling: ['wss://signaling.yjs.dev']
+    });
+    return { ydoc, provider };
+  });
 
   const editor = useEditor({
     extensions: [
@@ -68,15 +85,30 @@ export function TipTapNoteEditor({
         emptyNodeClass: 'before:text-muted-foreground',
         placeholder: 'Press / for commands or start typing...',
       }),
+      ...(yProvider ? [
+        Collaboration.configure({
+          document: yProvider.ydoc,
+        }),
+        CollaborationCursor.configure({
+          provider: yProvider.provider,
+          user: {
+            name: currentUser?.name || 'Anonymous',
+            color: USER_COLORS[Math.floor(Math.random() * USER_COLORS.length)],
+          },
+        }),
+      ] : []),
     ],
-    content: note?.content || '',
     editorProps: {
       attributes: {
         class:
           'prose prose-sm sm:prose-base dark:prose-invert prose-headings:font-bold prose-a:text-primary focus:outline-none max-w-none min-h-[500px] pb-32',
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor, transaction }) => {
+      // Ignore remote transactions (e.g. from Yjs synchronization) to prevent circular database saves
+      if (transaction.getMeta('y-sync$')) {
+        return;
+      }
       onSetStatus('unsaved');
       if (note?.id) {
         debouncedSave(note.id, editor.getHTML(), title);
@@ -84,35 +116,64 @@ export function TipTapNoteEditor({
     },
   });
 
-  const prevNoteIdRef = useRef<string | undefined>(note?.id);
+  // Cleanup WebRTC Provider
+  useEffect(() => {
+    return () => {
+      if (yProvider) {
+        yProvider.provider.destroy();
+        yProvider.ydoc.destroy();
+      }
+    };
+  }, [yProvider]);
 
-  // Handle note switching and external updates
+  // Load initial content from database if the document is empty on sync
+  useEffect(() => {
+    if (!editor || !yProvider || !note) return;
+
+    let isSubscribed = true;
+
+    const handleSync = (syncState: { synced: boolean } | boolean) => {
+      const isSynced = typeof syncState === "boolean" ? syncState : syncState.synced;
+      if (!isSubscribed) return;
+      if (isSynced) {
+        // Wait a small moment to ensure that active peer discovery finishes
+        setTimeout(() => {
+          if (!isSubscribed) return;
+          const xmlFragment = yProvider.ydoc.getXmlFragment('default');
+          const connectedPeersCount = yProvider.provider.awareness.getStates().size;
+          
+          // If we are the only user in the room (connectedPeersCount <= 1)
+          // and the Yjs document is empty, initialize it with the database content
+          if (connectedPeersCount <= 1 && xmlFragment.length === 0 && note.content) {
+            editor.commands.setContent(note.content);
+          }
+        }, 500);
+      }
+    };
+
+    yProvider.provider.on('synced', handleSync);
+    
+    // In case the provider was already synced
+    // @ts-ignore
+    if (yProvider.provider.synced) {
+      handleSync(true);
+    }
+
+    return () => {
+      isSubscribed = false;
+      yProvider.provider.off('synced', handleSync);
+    };
+  }, [editor, yProvider, note?.id]);
+
+  // Handle title updates from other clients
   useEffect(() => {
     if (!note || !editor) return;
 
-    const isIdChange = prevNoteIdRef.current !== note.id;
-    const isTempResolution = prevNoteIdRef.current?.startsWith('temp-') && !note.id.startsWith('temp-');
-    
-    // We only force a content overwrite if:
-    // 1. We are switching to a completely different note (not a temp ID resolution)
-    // 2. OR the note updated from the server (another user edited it) AND we aren't currently typing
-    
-    if (isIdChange && !isTempResolution) {
-      // Switched to a new note
-      editor.commands.setContent(note.content || '');
-      setTitle(note.title || 'Untitled');
-      originalTitle.current = note.title || 'Untitled';
-    } else if (!editor.isFocused && editor.getHTML() !== note.content) {
-      // External update received while we are not typing
-      editor.commands.setContent(note.content || '');
-      if (title !== note.title) {
-        setTitle(note.title || 'Untitled');
-        originalTitle.current = note.title || 'Untitled';
-      }
+    if (note.title && originalTitle.current !== note.title) {
+      setTitle(note.title);
+      originalTitle.current = note.title;
     }
-
-    prevNoteIdRef.current = note.id;
-  }, [note, editor]);
+  }, [note?.title, editor]);
 
   const debouncedSave = useDebouncedCallback(async (noteId: string, htmlContent: string, currentTitle: string) => {
     try {
