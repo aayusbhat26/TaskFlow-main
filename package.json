@@ -4,8 +4,7 @@
   "private": true,
   "workspaces": [
     "auth-service",
-    "socket-server",
-    "productivity-service"
+    "socket-server"
   ],
   "scripts": {
     "dev": "concurrently -n \"NEXT,AUTH,SOCK\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold\" \"npm run dev:next\" \"npm run dev:auth\" \"npm run dev:socket\"",
