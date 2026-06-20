@@ -33,6 +33,7 @@ COPY socket-server/server.ts ./socket-server/
 COPY socket-server/tsconfig.json ./socket-server/
 
 # Build only socket-server workspace
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build --workspace=chat-socket-server
 
 EXPOSE 3002

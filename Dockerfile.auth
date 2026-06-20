@@ -34,6 +34,7 @@ COPY auth-service/src ./src
 COPY auth-service/tsconfig.json ./
 
 # Build only auth-service workspace
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build --workspace=auth-service
 
 EXPOSE 3003
