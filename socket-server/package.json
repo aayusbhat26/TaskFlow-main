@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "tsx watch server.ts",
-    "build": "tsc server.ts --outDir dist",
+    "build": "tsc",
     "prisma:generate": "prisma generate --schema=../prisma/schema.prisma",
     "postinstall": "prisma generate --schema=../prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=../prisma/schema.prisma"
